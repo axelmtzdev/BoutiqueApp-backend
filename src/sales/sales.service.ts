@@ -6,6 +6,7 @@ import { Sale } from './entities/sale.entity';
 import { Model } from 'mongoose';
 import { Product } from 'src/products/entities/product.entity';
 import { Client } from 'src/clients/entities/client.entity';
+import { AddPaymentDto } from './dto/add-payment.dto';
 
 @Injectable()
 export class SalesService {
@@ -58,7 +59,7 @@ export class SalesService {
     );
 
     // Validar pagos iniciales si existen
-    let initialPayments: { amount: number; date: Date }[] = [];
+    let initialPayments: { amount: number; date: Date, payType: string }[] = [];
     if (payments && payments.length > 0) {
         const totalPayments = payments.reduce((sum, payment) => sum + payment.amount, 0);
         if (totalPayments > totalAmount) {
@@ -69,6 +70,8 @@ export class SalesService {
             amount: payment.amount,
             // Si no se proporciona una fecha, asignar la fecha actual
             date: payment.date ? new Date(payment.date) : new Date(),
+
+            payType: payment.paymentType
         }));
     }
 
@@ -105,12 +108,19 @@ async getSalesByClient(clientId: string): Promise<Sale[]> {
 
 
 async findByClientName(clientName: string): Promise<any[]> {
-  const results = await this.saleModel
-  .find({'client.name': { $regex: clientName, $options: 'i' }})
-  .populate('client')
-  .exec();
+  const matchingClients = await this.clientModel
+    .find({ name: { $regex: clientName, $options: 'i' } })
+    .select('_id')
+    .exec();
 
-  return results;
+  const clientIds = matchingClients.map(client => client._id);
+
+  const salesByClient = this.saleModel
+    .find({ client: { $in: clientIds } })
+    .populate('client')
+    .exec();
+
+  return salesByClient;
 }
 
   
@@ -123,6 +133,24 @@ async findByClientName(clientName: string): Promise<any[]> {
       .populate('client', 'name') // Pobla el campo client y solo devuelve su 'name'
       .populate('products.productId', 'name brand size imageUrl')
       .exec();
+  }
+
+
+  async addPayment(addPaymentDto: AddPaymentDto): Promise<Sale> {
+    const { saleId, payment } = addPaymentDto;
+
+    // Buscar la venta por ID
+    const sale = await this.saleModel.findById(saleId);
+
+    if (!sale) {
+      throw new NotFoundException(`Sale with ID ${saleId} not found`);
+    }
+
+    // Agregar el pago al arreglo de payments
+    sale.payments.push(payment);
+
+    // Guardar la venta actualizada en la base de datos
+    return await sale.save();
   }
 
   findOne(id: number) {

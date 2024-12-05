@@ -1,11 +1,14 @@
-import { IsDateString, IsNumber, IsOptional, Min } from "class-validator";
+import { IsDateString, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class PaymentDto {
     @IsNumber()
     @Min(0)
     amount: number;
 
-    @IsOptional()
+   
     @IsDateString()
-    date?: string;
+    date: Date;
+
+    @IsString()
+    paymentType: string
 }

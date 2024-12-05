@@ -3,6 +3,7 @@ import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { Sale } from './entities/sale.entity';
+import { AddPaymentDto } from './dto/add-payment.dto';
 
 @Controller('sales')
 export class SalesController {
@@ -29,14 +30,12 @@ export class SalesController {
   }
 
 
-//   @Get('client/:query')
-// async getSalesByClient(@Param('query') query: string): Promise<Sale[]> {
-//   return this.saleModel
-//     .find({ 'client.name': new RegExp(query, 'i') }) // Filtro dinámico por nombre
-//     .populate('client')
-//     .populate('products.productId')
-//     .exec();
-// }
+  @Patch('add-payment')
+  async addPayment(@Body() addPaymentDto: AddPaymentDto) {
+    return this.salesService.addPayment(addPaymentDto);
+  }
+  
+  
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSaleDto: UpdateSaleDto) {

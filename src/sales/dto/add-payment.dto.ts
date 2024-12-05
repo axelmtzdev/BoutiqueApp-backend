@@ -9,4 +9,6 @@ export class AddPaymentDto {
     @ValidateNested()
     @Type(() => PaymentDto)
     payment: PaymentDto;
+
+    
 }

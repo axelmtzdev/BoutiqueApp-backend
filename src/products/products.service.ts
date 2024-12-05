@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -28,6 +28,20 @@ export class ProductsService {
     }
   }
 
+  async updateProduct(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+    const updatedProduct = await this.productModel.findByIdAndUpdate(
+      id,
+      { $set: updateProductDto }, // Actualiza solo los campos provistos
+      { new: true, runValidators: true }, // Devuelve el producto actualizado
+    );
+
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with ID "${id}" not found`);
+    }
+
+    return updatedProduct;
+  }
+  
   findAll():Promise<Product[]> {
     return this.productModel.find()
   }

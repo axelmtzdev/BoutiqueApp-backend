@@ -23,12 +23,13 @@ export class Sale {
         type: [
             {
                 amount: { type: Number, required: true, min: 0 },
-                date: { type: Date, required: true }
+                date: { type: Date, required: true },
+                paymentType: {type: String, required: true}
             }
         ],
         default: [],
     })
-    payments: { amount: number; date: Date }[];
+    payments: { amount: number; date: Date, paymentType: string }[];
 
     @Prop({ default: Date.now })
     saleDate: Date;
